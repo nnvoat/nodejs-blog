@@ -3,6 +3,7 @@ const {
   mongooseToObject,
   multipleMongooseToObject,
 } = require("../../util/mongoose.js");
+const Courses = require("../models/Courses.js");
 
 class CourseController {
   // [GET] /course/:slug
@@ -25,13 +26,12 @@ class CourseController {
 
   // [POST] /course/store
   store(req, res, next) {
-    const formData = req.body;
-    formData.image = `https://img.youtube.com/vi/${req.body.videoId}/sddefault.jpg`;
-    const course = new Course(formData);
+    req.body.image = `https://img.youtube.com/vi/${req.body.videoId}/sddefault.jpg`;
+    const course = new Course(req.body);
 
     course
       .save()
-      .then(() => res.redirect("/"))
+      .then(() => res.redirect("/me/stored/courses"))
       .catch((err) => {});
   }
 
@@ -50,6 +50,27 @@ class CourseController {
   update(req, res, next) {
     Course.updateOne({ _id: req.params.id }, req.body)
       .then(() => res.redirect("/me/stored/courses"))
+      .catch(next);
+  }
+
+  // [DELETE] /courses/:id
+  destroy(req, res, next) {
+    Courses.delete({ _id: req.params.id })
+      .then(() => res.redirect("back"))
+      .catch(next);
+  }
+
+  // [DELETE] /courses/:id/force
+  forceDestroy(req, res, next) {
+    Courses.deleteOne({ _id: req.params.id })
+      .then(() => res.redirect("back"))
+      .catch(next);
+  }
+
+  // [PATCH] /courses/:id/restore
+  restore(req, res, next) {
+    Courses.restore({ _id: req.params.id })
+      .then(() => res.redirect("back"))
       .catch(next);
   }
 }
